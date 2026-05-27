@@ -1,0 +1,37 @@
+
+# 后端服务
+[[tcp.services.mysql-service.loadBalancer]]
+# 使用哪个 TCP 后端传输配置
+serversTransport = "my-tcp-timeout"
+
+[tcp.services.my-service.loadBalancer.healthCheck]
+# 每5秒检查一次
+interval = "5s"
+# 超时2秒
+timeout = "2s"
+
+[[tcp.services.mysql-service.loadBalancer.servers]]
+address = "172.17.0.10:3306"
+
+[[tcp.services.mysql-service.loadBalancer.servers]]
+address = "172.17.0.10:3307"
+
+
+
+# ======================================
+# 加权轮询服务（核心：WRR = Weighted Round Robin）
+# ======================================
+[[tcp.services.mysql-w.weighted.services]]
+name = "mysql-a"
+weight = 3
+
+[[tcp.services.mysql-w.weighted.services]]
+name = "mysql-b"
+weight = 1
+
+# 定义2个服务
+[[tcp.services.mysql-a.loadBalancer.servers]]
+address = "192.168.1.10:3306"
+ 
+[[tcp.services.mysql-b.loadBalancer.servers]]
+address = "192.168.1.11:3306"

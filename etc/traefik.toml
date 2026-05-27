@@ -1,0 +1,220 @@
+
+################################################################
+# Global configuration
+################################################################
+[global]
+# 检查新版本
+checkNewVersion = false
+# 发送匿名使用统计
+sendAnonymousUsage = false
+
+
+################################################################
+# Entrypoints configuration
+################################################################
+[entryPoints.web]
+# 监听地址（必填）
+address = ":80"
+# 是否允许自定义路由处理 HTTPS 证书申请
+# Optional Default: false    
+# allowACMEByPass = true 
+
+# 是否启用端口复用
+# 允许同一台机器上的多个进程（包括多个 Traefik 实例）监听同一个 TCP/UDP 端口
+# 一台机器上跑多个 Traefik 实例时，需要开启端口复用
+# Optional Default: false
+# reusePort = false
+
+
+# 设为默认入口点
+# 如果 路由配置里 不写 entryPoints，就用这个入口点
+# asDefault = true
+
+
+
+[entryPoints.websecure]
+address = ":443"
+
+[entryPoints.mqtt]
+address = ":8883"
+
+
+################################################################
+# Traefik logs configuration
+################################################################
+[log]
+
+# Log level
+#
+# Optional
+# Default: "ERROR"
+#
+level = "DEBUG"
+
+# Sets the filepath for the traefik log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+# Optional
+# Default: os.Stdout
+#
+filePath = "/var/log/traefik.log"
+
+# Maximum age in days of the log file before it gets rotated
+maxAge=15
+
+# Maximum size in MB of the log file before it gets rotated
+maxSize=300
+
+# When using the 'common' format, disables the colorized output
+noColor=true
+
+# Traefik log format: json | common 
+format = "common"
+
+# 最多 10 个备份
+maxBackups = 10 
+  
+# 旧日志压缩
+compress   = true 
+
+################################################################
+# Access logs configuration
+################################################################
+[accessLog]
+
+# Sets the file path for the access log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+# Optional
+# Default: os.Stdout
+#
+filePath = "/var/log/access-log.log"
+
+# Format is either "json", "common", or "genericCLF".
+# - "common": Traefik's extended CLF format (default)
+# - "genericCLF": Standard CLF format compatible with standard log analyzers
+# - "json": JSON format for structured logging
+#
+# Optional
+# Default: "common"
+#
+# format = "json"
+format = "json"
+
+# 批量写日志的缓冲行数
+bufferingSize=100
+
+# 记录 Traefik 内部服务（dashboard、ping）
+addInternals = true
+
+# 过滤日志
+[accessLog.filters]
+# 录 4xx 和 5xx 错误
+statusCodes = ["200", "300-302","400-499", "500-599"]
+
+# 录耗时超过 500 毫秒的慢请求
+minDuration = "500ms"
+
+# 录发生过重试的请求
+retryAttempts = true
+
+# 自定义访问日志里显示内容
+[accessLog.fields]
+
+# 默认策略：keep 保留 / drop 删除
+defaultMode = "drop"
+  
+  # 对单个字段设置：keep / drop
+  # defaultMode 默认删除所有字段，只保留你在 Names 里写的字段
+[accessLog.fields.names]
+"ClientHost"         = "keep"   # 客户端IP
+"RequestMethod"      = "keep"   # 请求方法
+"RequestAddr"        = "keep"   # 请求地址
+"RequestPath"        = "keep"   # 请求路径
+"RequestHost"        = "keep"   # 域名
+"DownstreamStatus"   = "keep"   # 状态码
+"Duration"           = "keep"   # 总耗时（纳秒）：179,024 ns ≈ 0.179 ms
+"RouterName"         = "keep"   # 路由
+"entryPointName"     = "keep"   # 入口
+"RetryAttempts"      = "keep"   # 重试次数
+"StartLocal"         = "keep"   # 时间
+
+
+# 头处理：Authorization、Cookie 打码
+[accessLog.fields.headers]
+defaultMode = "drop"
+
+[accessLog.fields.headers.names]
+"User-Agent"    = "keep"    # 客户端浏览器/设备信息
+"Referer"       = "keep"    # 来源页面
+"Authorization" = "redact"  # 授权信息
+"Cookie"        = "redact"  # Cookie
+
+
+################################################################
+# 配置 Traefik 的 API 接口与 Web 控制面板
+################################################################
+[api]
+  
+# 定义 API 和控制面板的基础路径前缀
+# # 访问地址变为: http://10.0.1.7:8080/api/api/overview
+#basePath="/api"
+
+# 不安全模式。直接在名为 traefik 的内置入口点（默认 :8080）上暴露 API 和面板，无需认证
+# false 仅限本地开发 / 内网测试，生产环境绝对禁用
+insecure = true
+
+# 开启调试模式，暴露更多 API 端点
+# /debug/vars：全局变量
+# /debug/pprof/：Go 性能剖析（CPU、内存、协程）
+debug=true
+
+# 启用 / 禁用 Web 控制面板
+dashboard = true
+
+# 移除控制面板页面底部的官方广告
+disableDashboardAd=true
+
+################################################################
+# Ping configuration
+################################################################
+
+# 用来让外部 监控工具检测：Traefik 是否还活着、是否正常运行
+[ping]
+
+# 监听在 80 端口
+# http://IP/ping 返回 OK
+# http://10.0.1.7/ping 返回 OK 200
+entryPoint = "web"  
+
+################################################################
+# Docker configuration backend
+################################################################
+
+# Enable Docker configuration backend
+[providers.docker]
+
+# Docker server endpoint. Can be a tcp or a unix socket endpoint.
+#
+# Required
+# Default: "unix:///var/run/docker.sock"
+#
+# endpoint = "unix:///var/run/docker.sock"
+
+# Default host rule.
+#
+# Optional
+# Default: "Host(`{{ normalize .Name }}`)"
+#
+# defaultRule = "Host(`{{ normalize .Name }}.docker.localhost`)"
+
+# Expose containers by default in traefik
+#
+# Optional
+# Default: true
+#
+# exposedByDefault = false
+
+[providers.file]
+directory = "/providers/files"
+watch = true

@@ -1,0 +1,17 @@
+
+# 后端服务
+[tcp.services.mysql-service.loadBalancer]
+# 使用哪个 TCP 后端传输配置
+serversTransport = "m-mysql-tcp-timeout"
+
+[tcp.services.my-service.loadBalancer.healthCheck]
+# 每5秒检查一次
+interval = "5s"
+# 超时2秒
+timeout = "2s"
+
+[[tcp.services.mysql-service.loadBalancer.servers]]
+address = "10.0.1.7:3316"
+
+[[tcp.services.mysql-service.loadBalancer.servers]]
+address = "10.0.1.7:3326"

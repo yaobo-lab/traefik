@@ -1,0 +1,53 @@
+# HTTP (7 层)
+
+[http.routers.my-api]
+
+# 绑定入口点 多个入口点用数组
+# 不写 = 绑定所有入口点
+entryPoints = ["websecure"]
+
+# HTTP 路由器（规则匹配） 
+# 请求进来 → 代入 Rule → 结果为 true → 匹配成功 → 交给这个路由处理
+
+
+# Host(demo.com) 匹配请求的域名
+# Path(/api/user) 精确匹配路径,要一比一的相同
+# PathPrefix(/api) 前缀匹配路径
+# Method(GET) 匹配请求方法
+# Headers(X-Auth, true) 匹配请求头
+# ClientIP(192.168.1.0/24) 匹配客户端 IP. IP 白名单
+# Query(id, 123) 匹配 URL 参数
+
+ 
+# && （且 → 必须同时满足）
+# 必须域名 + 路径同时匹配才生效
+rule = "Host(`api.example.com`)&& Path(`/myapi`)"
+
+ 
+# 使用下面定义的中间件
+middlewares = ["m-ip-rate-limit","m-strip-pefix","m-ip-allow","m-forward-oidc-auth"]  
+
+
+# 绑定的后端服务
+service = "api-backend"
+
+# || （或 → 满足一个就行）
+# rule = "Host(`api.example.com`) || Host(`app.example.com`)"
+
+# () 括号（分组，改变优先级）
+# rule = "Host(`example.com`) && (Path(`/a`) || Path(`/b`))"
+ 
+
+#  开启 TLS Traefik 会根据你 router 里的 rule = Host(...) 域名，
+#  自动去全局 [tls] 证书列表里匹配最匹配的证书
+
+# 收到请求 https://api.example.com
+# 看到 Host: api.example.com
+# 扫描全局所有 [[tls.certificates]]
+# 找到包含 api.example.com 域名的证书
+# 自动使用它
+[http.routers.my-api.tls] 
+
+# 可观测性-开启访问日志
+[http.routers.my-api.observability]
+accessLogs = true

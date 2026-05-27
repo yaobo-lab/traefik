@@ -1,0 +1,16 @@
+[http.routers.whoami-api]
+
+entryPoints = ["web"]
+
+rule = "Host(`10.0.1.7`)&& PathPrefix(`/whoami`)"
+
+# middlewares = ["m-strip-perfix"]  
+# middlewares = ["m-compress","m-ip-rate-limit","m-strip-perfix","m-ip-allow"]  
+middlewares = ["m-internal-ip-allow","m-ip-rate-limit","m-strip-perfix"]  
+
+service = "whoami-api"
+ 
+[http.routers.whoami-api.observability]
+accessLogs = true
+
+

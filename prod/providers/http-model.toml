@@ -1,0 +1,7 @@
+
+[http.models.api-basic-model]
+middlewares = ["m-compress","m-ip-rate-limit"]  
+
+# 可观测性-开启访问日志
+[http.models.api-basic-model.observability]
+accessLogs = true

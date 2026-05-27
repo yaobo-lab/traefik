@@ -1,0 +1,211 @@
+
+#[中间件] 请求到达 Service 前 执行逻辑 
+
+# 转发添加前缀 
+# 访问 /user → 转发给后端 /api/user
+[http.middlewares.m-add-pefix.addPrefix]
+prefix = "/api"
+
+# 转发删除前缀
+# 访问 /api/user → 转发给后端 /user
+[http.middlewares.m-strip-pefix.stripPrefix]
+prefixes = ["/api"]
+
+# 重写路径  强制把请求路径「替换成」你指定的新路径
+# 用户访问 /aaa → 后端 /health
+# 用户访问 /api/user → 后端 /health
+# 用户访问 / → 后端 /health
+[http.middlewares.m-rewrite-path.replacePath]
+path = "/health"
+
+
+# 只允许 只允许你指定的 IP / IP 段访问服务
+# 单个 IP：192.168.1.10
+# CIDR 段：192.168.1.0/24
+[http.middlewares.m-ip-allow.ipAllowList]
+sourceRange = [
+    "127.0.0.1",          # 本机
+    "192.168.1.0/24",     # 内网
+    "10.0.0.0/8",         # 内网
+    "203.0.113.5"         # 公网IP
+  ]
+ # 不允许的IP直接返回404，假装不存在 通常是403
+ rejectStatusCode = 404  
+
+
+# 统一控制「请求头 + 响应头 + CORS 跨域 + 全站安全头」的中间件
+[http.middlewares.secure-headers.headers]
+# CORS
+accessControlAllowCredentials = true
+accessControlAllowHeaders    = ["Content-Type", "Authorization"]
+accessControlAllowMethods    = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+accessControlAllowOriginList = ["https://app.example.com"]
+accessControlMaxAge          = 86400
+addVaryHeader                = true
+
+# 自定义添加请求头
+[http.middlewares.secure-headers.headers.customRequestHeaders]
+ X-Test = "yaobo" 
+
+# 自定义添加响应头
+[http.middlewares.secure-headers.headers.customResponseHeaders]
+X-Server = "Traefik"
+X-Powered-By = ""  # 空值 = 删除该头
+
+
+
+# 协议重定向
+# 强制把 http → https（或者 https → http）
+# 只改协议，不改域名、不改路径
+[http.middlewares.m-https-redirect.redirectScheme]
+scheme = "https"  # 重定向成 https
+permanent = true   # 301永久重定向（SEO友好）
+
+# 旧API跳新API
+[http.middlewares.api-v1-redirect.redirectRegex]
+regex = "^(.*)/api/(.*)"
+replacement = "$1/v1/api/$2"
+permanent = true
+
+
+# 鉴权中间件
+[http.middlewares.m-basic-auth.basicAuth]
+users = ["user:password"]
+
+
+# 转发认证-它将请求的认证 / 授权逻辑完全委托给外部服务，实现网关层统一认证
+# 2xx 响应：认证通过，Traefik 将原始请求转发给后端服务
+# 非 2xx 响应（如 401/403）：认证失败，Traefik 直接将认证服务的错误响应返回给客户端Traefik Labs
+# 可将认证服务返回的用户信息（如 X-User-ID）透传给后端服务
+[http.middlewares.m-oidc-auth.forwardAuth]
+
+# 认证服务的完整URL (如: https://auth-service.example.com/verify)
+address = "http://127.0.0.1:8080/auth"
+
+# 是否信任并转发 `X-Forwarded-*` 系列头（如X-Forwarded-For, X-Forwarded-Proto）
+# 多级代理（如CDN → Traefik → Auth Service）时必须设为 true
+trustForwardHeader = true
+
+# 指定哪些客户端请求头要发给认证服务。默认：发送所有头
+authRequestHeaders = ["Authorization", "Cookie", "X-Real-IP"]
+
+# 是否将客户端请求体（Body）转发给认证服务（如POST/PUT数据）
+forwardBody = false
+
+# 允许转发给认证服务的最大请求体大小（字节）
+maxBodySize = 1048576 # 1MB
+
+# 限制认证服务返回响应体的最大大小（防止恶意大响应）
+maxResponseBodySize = 524288 # 512KB
+
+# 如何处理认证服务返回的 Location 重定向头
+# true: 原样返回给客户端 | false: 用Auth服务域名补全（不常用）
+preserveLocationHeader = true
+
+# 转发到认证服务时，是否保留原始请求方法（GET/POST/PUT）
+# false (默认): 统一用GET | true: 用原始方法（需Auth服务支持）
+preserveRequestMethod = false
+
+# 认证服务响应中复制指定头，添加到发往后端的请求中
+# 作用：后端服务可直接读取用户信息（如用户ID、角色）
+authResponseHeaders = ["X-User-ID", "X-User-Role", "X-Auth-Token"]
+
+# 从认证服务响应中复制指定Cookie到最终返回给客户端的响应中
+addAuthCookiesToResponse = ["session_id"]
+
+# 指定一个头名，用于存储认证用户信息（通常配合Auth服务使用）
+headerField = "X-Forwarded-User"
+
+
+# 限流（每秒请求数）
+# 控制客户端每秒能发多少请求，防止被刷爆、CC 攻击、恶意调用
+#  average=10，period=1s  10 请求 / 秒
+#  average=10，period=60s  10 请求 / 分钟
+[http.middlewares.m-ip-rate-limit.rateLimit]
+# 平均允许多少请求
+average = 100
+
+# 周期是多少秒
+period="1s"
+
+# 最大峰值（瞬间能来多少请求）
+# 允许瞬间爆发的请求量，超过直接 429 拒绝
+# burst=50  允许瞬间来 50 个请求，超过直接 429 拒绝
+burst = 50
+
+# 互斥规则：三个字段只能开一个，默认按 IP 限流
+[http.middlewares.host-limit.rateLimit.sourceCriterion]
+# 按域名限流
+requestHost = true
+
+# 按用户 ID限流
+requestHeaderName = "X-User-ID"
+
+# 按 ipStrategy：按 IP（默认） 限流
+[http.middlewares.ip-limit.rateLimit.sourceCriterion.ipStrategy]
+
+# X-Forwarded-For 格式：真实IP, 代理1IP, 代理2IP, Traefik直接IP
+# depth=0 → 不生效，用直接连接 IPTraefik Labs
+# depth=1 → 取最右侧（最近代理）Traefik Labs
+# depth=2 → 取倒数第二个（真实客户端）
+
+
+# X-Forwarded-For: 192.168.1.100, 10.0.0.1, 172.17.0.1
+# depth=2 → 取 10.0.0.1
+# depth=3 → 取 192.168.1.100（真实客户端）
+depth = 3  # 从右数第3个，取真实IP
+
+
+excludedIPs = ["172.17.0.1/32", "10.0.0.0/8"]  # 排除内网代理
+ipv6Subnet = 64  # IPv6按/64子网聚合
+
+
+# 压缩响应体
+[http.middlewares.m-rep-compress.compress]
+# 启用哪些压缩算法
+# 默认压缩算法
+# gzip: 最通用，所有浏览器都支持
+# brotli: 比 gzip 更好，现代浏览器
+# zstd（高性能压缩）
+encodings = ["gzip", "brotli"]
+
+# 浏览器没指定压缩格式时，用哪个默认
+defaultEncoding = "gzip"
+
+# 响应体至少多大才开始压缩 （字节）
+# 太小的文件压缩没意义，还浪费 CPU
+# 默认：1024 字节（1KB）
+minResponseBodyBytes = 1024
+
+# 只压缩这些类型的内容
+# includedContentTypes = [
+#   "text/html",
+#   "application/json",
+#   "text/css",
+#   "application/javascript"
+# ]
+
+
+# 不压缩这些类型的内容
+# excludedContentTypes = [
+#   "image/*",
+#   "video/*",
+#   "audio/*",
+#   "application/grpc",
+#   "application/zip"
+# ]
+
+
+# 失败自动重试
+[http.middlewares.retry-3x.retry]
+attempts = 3
+
+
+# 专门用于「大文件上传」的中间件
+[http.middlewares.m-upload-100mb.buffering]
+# 100MB 上传限制
+maxRequestBodyBytes = 104857600 
+# 10MB 内存缓冲，超过写磁盘
+memRequestBodyBytes  = 10485760   
+# 响应也限制100MB
+maxResponseBodyBytes = 104857600

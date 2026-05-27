@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mysql2:
+    image: crpi-p35inr9lrgirg3t0.cn-hangzhou.personal.cr.aliyuncs.com/yaobo-box/mysql:8.0
+    container_name: mysql8-2
+    restart: always
+    ports:
+      - "3326:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456   
+      MYSQL_DATABASE: test_db    
+      TZ: Asia/Shanghai
+    volumes:
+      - $PWD/data2:/var/lib/mysql         
+      - $PWD/conf2:/etc/mysql/conf.d     
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --lower_case_table_names=1  

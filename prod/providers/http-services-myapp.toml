@@ -1,0 +1,31 @@
+ [http.services.myapp-api.loadBalancer]
+
+strategy = "wrr"
+
+# 是否转发原始 Host 头
+# 用户访问 Host: api.com
+# Traefik 转发给后端 Host: api.com
+passHostHeader = true
+
+# 使用对应的传输配置
+# serversTransport = "upload-timeout-transport"
+
+# 健康检查（可选）
+# Traefik 定期向后端发送请求，自动剔除不健康节点
+[http.services.myapp-api.loadBalancer.healthCheck]
+mode="http"
+path = "/api/health"     # 检查路径
+interval = "10s"         # 检查间隔
+timeout = "5s"           # 超时时间
+status = "200"           # 健康状态码
+ 
+
+[[http.services.myapp-api.loadBalancer.servers]]
+url = "http://10.0.1.7:8024"
+weight=2
+preservePath = false
+
+[[http.services.myapp-api.loadBalancer.servers]]
+url = "http://10.0.1.6:8024"
+weight=1
+preservePath = false

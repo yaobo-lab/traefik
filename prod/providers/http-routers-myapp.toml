@@ -1,0 +1,13 @@
+  
+[http.routers.myapp-api]
+
+entryPoints = ["web"]
+
+rule = "Host(`10.0.1.7`)&& PathPrefix(`/myapp`)"
+
+middlewares = ["m-internal-ip-allow","m-ip-rate-limit","m-strip-perfix"]  
+
+service = "myapp-api"
+ 
+[http.routers.myapp-api.observability]
+accessLogs = true

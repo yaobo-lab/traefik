@@ -1,0 +1,48 @@
+# 转发认证-它将请求的认证 / 授权逻辑完全委托给外部服务，实现网关层统一认证
+# 2xx 响应：认证通过，Traefik 将原始请求转发给后端服务
+# 非 2xx 响应（如 401/403）：认证失败，Traefik 直接将认证服务的错误响应返回给客户端Traefik Labs
+# 可将认证服务返回的用户信息（如 X-User-ID）透传给后端服务
+[http.middlewares.m-oidc-auth.forwardAuth]
+
+# 认证服务的完整URL (如: https://auth-service.example.com/verify)
+address = "http://127.0.0.1:8080/auth"
+
+# 是否信任并转发 `X-Forwarded-*` 系列头（如X-Forwarded-For, X-Forwarded-Proto）
+# 多级代理（如CDN → Traefik → Auth Service）时必须设为 true
+trustForwardHeader = true
+
+# 是否将客户端请求体（Body）转发给认证服务（如POST/PUT数据）
+forwardBody = false
+
+# 允许转发给认证服务的最大请求体大小（字节）
+maxBodySize = 1048576 # 1MB
+
+# 限制认证服务返回响应体的最大大小（防止恶意大响应）
+maxResponseBodySize = 524288 # 512KB
+
+# 如何处理认证服务返回的 Location 重定向头
+# true: 原样返回给客户端 | false: 用Auth服务域名补全
+preserveLocationHeader = true
+
+# 转发到认证服务时，是否保留原始请求方法（GET/POST/PUT）
+# false (默认): 统一用GET | true: 用原始方法
+preserveRequestMethod = false
+
+# 指定哪些客户端请求头要发给认证服务。默认：发送所有头
+authRequestHeaders = ["Authorization", "Cookie", "X-Real-IP"]
+
+# 把授权服务返回的指定响应头，复制并覆盖, 发给后端的请求头里 
+# 作用：后端服务可直接读取用户信息（如用户ID、角色）
+authResponseHeaders = ["X-User-ID", "X-User-Role", "Authorization"]
+
+
+# 授权服务返回的 Set-Cookie
+# → 由 Traefik 抓取
+# → 最终写入【浏览器 / 客户端】
+# 下发Cookie：从授权服务复制到客户端，覆盖后端同名
+# 从认证服务响应中复制指定Cookie到最终返回给客户端的响应中
+# addAuthCookiesToResponse = ["session_id"]
+
+# 判断认证是否通过
+# 授权服务返回 2xx 状态码 + 非空 headerField 值
+# headerField = "X-Forwarded-User"

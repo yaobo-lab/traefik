@@ -1,0 +1,12 @@
+[http]
+[http.routers.my-api]
+rule = "Host(`api.example.com`)"
+service = "backend-api"
+middlewares = ["security-headers"]
+
+[http.services.backend-api.loadBalancer]
+[[http.services.backend-api.loadBalancer.servers]]
+url = "http://172.17.0.2:80"
+
+[http.middlewares.security-headers.headers]
+accessControlAllowMethods = ["GET", "POST"]

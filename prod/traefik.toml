@@ -1,0 +1,84 @@
+[global]
+checkNewVersion = false
+sendAnonymousUsage = false
+
+[entryPoints.web] 
+address = ":80"
+  
+[entryPoints.websecure]
+address = ":443"
+
+[entryPoints.mysql]
+address = ":3366"
+
+
+[log]
+level = "DEBUG" 
+filePath = "/var/log/traefik.log" 
+maxAge=15 
+maxSize=300 
+noColor=true
+format = "common"
+maxBackups = 10 
+compress   = true 
+
+
+[accessLog]
+filePath = "/var/log/access-log.log"
+format = "json"
+bufferingSize=100
+addInternals = true
+
+# 过滤日志
+[accessLog.filters]
+# 记录 4xx 和 5xx 错误
+statusCodes = ["200", "300-302","400-499", "500-599"]
+# 记录耗时超过 500 毫秒的慢请求
+minDuration = "500ms"
+# 记录发生过重试的请求
+retryAttempts = true
+ 
+[accessLog.fields] 
+defaultMode = "drop"
+  
+[accessLog.fields.names]
+"ClientHost"         = "keep"   # 客户端IP
+"RequestMethod"      = "keep"   # 请求方法
+"RequestAddr"        = "keep"   # 请求地址
+"RequestPath"        = "keep"   # 请求路径
+"RequestHost"        = "keep"   # 域名
+"DownstreamStatus"   = "keep"   # 状态码
+"OriginStatus"       = "keep"   # 原始状态码
+"RequestSize"        = "keep"   # 请求体（字节）：1234 1234 字节
+"Duration"           = "keep"   # 总耗时（纳秒）：179,024 ns ≈ 0.179 ms
+"RouterName"         = "keep"   # 路由
+"entryPointName"     = "keep"   # 入口
+"RetryAttempts"      = "keep"   # 重试次数
+"StartLocal"         = "keep"   # 时间
+"ServiceName"        = "keep"   # 后端服务名称
+"ServiceURL"         = "keep"   # 后端完整URL
+
+ 
+[accessLog.fields.headers]
+defaultMode = "drop"
+
+[accessLog.fields.headers.names]
+"User-Agent"    = "keep"    # 客户端浏览器/设备信息
+"Referer"       = "keep"    # 来源页面
+"Authorization" = "keep"    # 授权信息
+"Cookie"        = "keep"   # Cookie
+
+ 
+[api]
+insecure = true
+debug=false
+dashboard = true
+disableDashboardAd=true
+
+
+[ping]
+entryPoint = "web"
+
+[providers.file]
+directory = "/providers"
+watch = true

@@ -1,0 +1,364 @@
+# Global configuration
+[global]
+# 检查新版本
+checkNewVersion = false
+# 发送匿名使用统计
+sendAnonymousUsage = false
+
+
+# 全局默认 TCP 后端传输配置
+# 对 TCP 后端服务的专属连接配置（对应 HTTP 场景的 ServersTransport）
+# 纯 TCP 流量（MySQL、PostgreSQL、Redis、SSH、TCP 隧道、gRPC TCP 等）
+# ServersTransport → HTTP/HTTPS 后端（有连接池、Header 超时、压缩等）
+# TCPServersTransport → 纯 TCP 后端（只关心底层 TCP 连接、超时、保活、TLS）
+# 静态配置顶层：tcpServersTransport（全局默认）
+# 动态配置：tcp.serversTransports（可自定义多套，给不同 TCP 服务引用）
+[tcpServersTransport]
+# TCP 保活探测间隔
+# 空闲连接时，每隔 DialKeepAlive 发空包探测链路是否存活
+dialKeepAlive = "15s"
+
+# 建立 TCP 连接的超时时间（三次握手超时）
+dialTimeout = "15s"
+
+# 半关闭延迟（默认 100ms）
+# 当连接被关闭时，等待这个时间后，再关闭连接
+terminationDelay = "200ms" 
+
+# 连接后端时的 TLS 客户端配置
+[tcpServersTransport.tls]
+
+#是否跳过证书校验  生产环境必须为 false
+insecureSkipVerify = false  
+# SNI 主机名（多域名证书必备）
+serverName = "mysql.example.com" 
+# 信任的根 CA 列表（PEM 文件路径）
+rootCAs = ["/etc/traefik/ca.crt"] 
+
+# mTLS 客户端证书（双向认证）
+[[tcpServersTransport.tls.certificates]]
+certFile = "/etc/traefik/client.crt"
+keyFile = "/etc/traefik/client.key"
+
+
+
+# Entrypoints configuration
+
+[entryPoints.websecure]
+address = ":443"
+
+[entryPoints.mqtt]
+address = ":8883"
+
+[entryPoints.web]
+# 监听地址
+address = ":80"
+
+# 是否允许自定义路由处理 HTTPS 证书申请
+# allowACMEByPass = true 
+
+# 是否启用端口复用
+# 允许同一台机器上的多个进程（包括多个 Traefik 实例）监听同一个 TCP/UDP 端口
+# 一台机器上跑多个 Traefik 实例时，需要开启端口复用
+# reusePort = false
+
+# 设为默认入口点
+# 如果 路由配置里 不写 entryPoints，就用这个入口点
+asDefault = true
+
+
+[entryPoints.web.transport]
+
+# 一条 长连接从建立到强制关闭的最长总时间（不管闲不闲、用没用）
+# Default: 0s  （不限制，一直用到空闲超时）
+ keepAliveMaxTime = "0s"
+
+# 一条 长连接最多允许发送多少个请求，达到后关闭
+# Default: 0 （不限制）
+keepAliveMaxRequests = 0
+
+[entryPoints.web.transport.lifeCycle]
+# 在 开始真正优雅停机前，继续接收新请求的持续时间
+# 收到停止信号（SIGTERM/SIGINT）后，N 秒后才不再接受新请求，进入 GraceTimeOut
+# Default: 0s （默认不开启，直接进入 GraceTimeOut）
+# requestAcceptGraceTimeout = "0s"
+
+# 不再接受新请求后，等待已有请求执行完毕的最长时间Traefik Labs
+# Default: 10s
+graceTimeOut = "10s"
+
+
+[entryPoints.web.transport.respondingTimeouts]
+# 从客户端读取整个请求（头 + 体）的最大时间 超时直接断开连接
+# Default: 60s
+# 上传接口/大文件用 120s  
+# 客户端「上传」给 Traefik 的时间 (客户端 → Traefik: Traefik在读客户端发过来的数据)
+readTimeout = "60s"
+
+# 向客户端写响应的最大时间（从开始写到写完）
+# Default: 0s 不限制
+# 下载/大返回用 120s  
+# Traefik「下载」给客户端的时间 (Traefik → 客户端: Traefik 在写数据给客户端)
+writeTimeout = "0s"
+
+# Keep-Alive 长连接空闲多久关闭（没数据传输）
+# Default: 180s
+# 请求已经处理完了 客户端和 Traefik 的连接还没断开（双方都不发数据 这个状态就叫 idle（空闲））
+idleTimeout = "120s"
+
+[entryPoints.web.forwardedHeaders]
+# 是否信任所有转发头(无条件信任所有转发过来的头)
+# Default: false
+# insecure = false
+
+# 信任的代理 IP 列表
+# Default: []
+# 信任所有内网 IP 的代理（LB/nginx）
+# trustedIPs = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+
+# 允许透传的 Connection 头 允许哪些 Connection 头不被删除，直接透传给后端
+# HTTP 长连接控制头 Connection: keep-alive | close | upgrade
+# Default: []
+# connection = []
+
+[entryPoints.web.http]
+
+# 给这个入口点绑定【端口全局中间件】
+# Default: []
+# middlewares = ["rate-limit@file", "cors@file"]
+middlewares = []
+
+# 是否把 URL 参数中的 ; 自动编码为 %3B
+# 有些后端不支持 ; 作为参数分隔符
+# Default: false
+# encodeQuerySemicolons = false
+
+# 自动安全清理请求路径（安全功能，非常重要）
+# 清理路径中的特殊字符（如 ; 、 / 、 \ 、 " 、 ' 等）
+# /api/../user → 自动变成 /user
+# Default: true
+sanitizePath = true
+
+# 请限制 HTTP 请求头最大大小（单位：字节）
+# 如果请求头太大（Cookie 多、自定义头多），会报 431 错误
+# Default: 1048576 （1MB） 
+maxHeaderBytes = 2097152
+
+# 为指定入口点（比如监听 80 端口的 web 入口点）配置全局的、入口点级别的 HTTP 重定向规则
+# 强制将 HTTP 请求重定向到 HTTPS
+#  http://xxx:80 的请求，会被 301 永久重定向到 https://xxx:443
+# [entryPoints.web.http.redirections] 
+# # 重定向到名为 websecure 的入口点
+# to = "websecure"
+
+# # 强制 HTTPS 协议（显式声明，与默认值一致
+# scheme = "https"
+
+# # 永久重定向（301，RedirectEntryPoint.Permanent，默认值可省略）       
+# permanent = true
+
+# # 优先级（math.MaxInt -1，默认值可省略）
+# priority = 9223372036854775806
+
+
+# 设置「全局默认 TLS 配置」
+# [entryPoints.web.http.tls] 
+# certResolver = "le"
+# options = "modern"
+
+# [entryPoints.web.http.encodedCharacters]
+
+[entryPoints.web.http2]
+
+# Default: 250
+# maxConcurrentStreams = 250
+
+
+# Default: 4096
+# maxDecoderHeaderTableSize = 4096
+
+
+# Default: 4096
+# maxEncoderHeaderTableSize = 4096
+
+
+
+[entryPoints.web.udp]
+# UDP 空闲会话超时
+
+# Default: 3s
+# timeout = "3s"
+
+ 
+# Traefik logs configuration
+[log]
+
+# Log level
+#
+
+# Default: "ERROR"
+#
+level = "DEBUG"
+
+# Sets the filepath for the traefik log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+
+# Default: os.Stdout
+#
+filePath = "/var/log/traefik.log"
+
+# Maximum age in days of the log file before it gets rotated
+maxAge=15
+
+# Maximum size in MB of the log file before it gets rotated
+maxSize=300
+
+# When using the 'common' format, disables the colorized output
+noColor=true
+
+# Traefik log format: json | common 
+format = "common"
+
+# 最多 10 个备份
+maxBackups = 10 
+  
+# 旧日志压缩
+compress   = true 
+
+
+# Access logs configuration
+[accessLog]
+
+# Sets the file path for the access log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+
+# Default: os.Stdout
+#
+filePath = "/var/log/access-log.log"
+
+# Format is either "json", "common", or "genericCLF".
+# - "common": Traefik's extended CLF format (default)
+# - "genericCLF": Standard CLF format compatible with standard log analyzers
+# - "json": JSON format for structured logging
+#
+
+# Default: "common"
+#
+# format = "json"
+format = "json"
+
+# 批量写日志的缓冲行数
+bufferingSize=100
+
+# 记录 Traefik 内部服务（dashboard、ping）
+addInternals = true
+
+# 过滤日志
+[accessLog.filters]
+# 录 4xx 和 5xx 错误
+statusCodes = ["200", "300-302","400-499", "500-599"]
+
+# 录耗时超过 500 毫秒的慢请求
+minDuration = "500ms"
+
+# 录发生过重试的请求
+retryAttempts = true
+
+# 自定义访问日志里显示内容
+[accessLog.fields]
+
+# 默认策略：keep 保留 / drop 删除
+defaultMode = "drop"
+  
+  # 对单个字段设置：keep / drop
+  # defaultMode 默认删除所有字段，只保留你在 Names 里写的字段
+[accessLog.fields.names]
+"ClientHost"         = "keep"   # 客户端IP
+"RequestMethod"      = "keep"   # 请求方法
+"RequestAddr"        = "keep"   # 请求地址
+"RequestPath"        = "keep"   # 请求路径
+"RequestHost"        = "keep"   # 域名
+"DownstreamStatus"   = "keep"   # 状态码
+"Duration"           = "keep"   # 总耗时（纳秒）：179,024 ns ≈ 0.179 ms
+"RouterName"         = "keep"   # 路由
+"entryPointName"     = "keep"   # 入口
+"RetryAttempts"      = "keep"   # 重试次数
+"StartLocal"         = "keep"   # 时间
+"ServiceName"        = "keep"   # 后端服务名称
+"ServiceURL"         = "keep"   # 后端完整URL
+
+
+# 头处理：Authorization、Cookie 打码
+[accessLog.fields.headers]
+defaultMode = "drop"
+
+[accessLog.fields.headers.names]
+"User-Agent"    = "keep"    # 客户端浏览器/设备信息
+"Referer"       = "keep"    # 来源页面
+"Authorization" = "redact"  # 授权信息
+"Cookie"        = "redact"  # Cookie
+
+
+# 配置 Traefik 的 API 接口与 Web 控制面板
+[api]
+  
+# 定义 API 和控制面板的基础路径前缀
+# # 访问地址变为: http://10.0.1.7:8080/api/api/overview
+#basePath="/api"
+
+# 不安全模式。直接在名为 traefik 的内置入口点（默认 :8080）上暴露 API 和面板，无需认证
+# false 仅限本地开发 / 内网测试，生产环境绝对禁用
+insecure = true
+
+# 开启调试模式，暴露更多 API 端点
+# /debug/vars：全局变量
+# /debug/pprof/：Go 性能剖析（CPU、内存、协程）
+debug=true
+
+# 启用 / 禁用 Web 控制面板
+dashboard = true
+
+# 移除控制面板页面底部的官方广告
+disableDashboardAd=true
+
+
+# Ping configuration
+# 用来让外部 监控工具检测：Traefik 是否还活着、是否正常运行
+[ping]
+
+# 监听在 80 端口
+# http://IP/ping 返回 OK
+# http://10.0.1.7/ping 返回 OK 200
+entryPoint = "web"  
+
+ 
+# providers configuration backend
+# Enable Docker configuration backend
+[providers.docker]
+
+# Docker server endpoint. Can be a tcp or a unix socket endpoint.
+#
+# Required
+# Default: "unix:///var/run/docker.sock"
+#
+# endpoint = "unix:///var/run/docker.sock"
+
+# Default host rule.
+#
+
+# Default: "Host(`{{ normalize .Name }}`)"
+#
+# defaultRule = "Host(`{{ normalize .Name }}.docker.localhost`)"
+
+# Expose containers by default in traefik
+#
+
+# Default: true
+#
+# exposedByDefault = false
+
+[providers.file]
+directory = "/providers/files"
+watch = true

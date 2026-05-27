@@ -1,0 +1,11 @@
+[http.serversTransports.upload-timeout-transport]
+# 空闲超时 5分钟（大文件必须大）
+idleTimeout = "300s"   
+# 响应头超时
+responseHeaderTimeout = "300s" 
+# 转发超时
+forwardingTimeout = "300s" 
+# 连接超时
+dialTimeout = "10s"
+# 最大空闲连接
+maxIdleConns = 100      

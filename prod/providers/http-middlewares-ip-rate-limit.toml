@@ -1,0 +1,29 @@
+ 
+[http.middlewares.m-ip-rate-limit.rateLimit]
+# 平均允许多少请求
+average = 100
+
+# 周期是多少秒
+period="1s"
+
+# 最大峰值（瞬间能来多少请求）
+# 允许瞬间爆发的请求量，超过直接 429 拒绝
+# burst=50  允许瞬间来 50 个请求，超过直接 429 拒绝
+burst = 50
+
+ 
+# 按 ipStrategy：按 IP（默认） 限流
+[http.middlewares.ip-limit.rateLimit.sourceCriterion.ipStrategy]
+
+# X-Forwarded-For 格式：真实IP, 代理1IP, 代理2IP, Traefik直接IP
+# depth=0 → 不生效，用直接连接 IPTraefik Labs
+# depth=1 → 取最右侧（最近代理）Traefik Labs
+# depth=2 → 取倒数第二个（真实客户端）
+
+
+# X-Forwarded-For: 192.168.1.100, 10.0.0.1, 172.17.0.1
+# depth=2 → 取 10.0.0.1
+# depth=3 → 取 192.168.1.100（真实客户端）
+depth = 3  # 从右数第3个，取真实IP
+ipv6Subnet = 64  # IPv6按/64子网聚合
+excludedIPs = ["172.17.0.1/32", "10.0.0.0/8"]  # 排除内网代理

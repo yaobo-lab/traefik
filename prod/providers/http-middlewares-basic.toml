@@ -1,0 +1,98 @@
+
+#[中间件] 请求到达 Service 前 执行逻辑 
+
+# 转发添加前缀 
+# 访问 /user → 转发给后端 /api/user
+[http.middlewares.m-add-api-pefix.addPrefix]
+prefix = "/api"
+
+# 转发删除前缀
+# 访问 /api/user → 转发给后端 /user
+[http.middlewares.m-strip-api-pefix.stripPrefix]
+prefixes = ["/api"]
+
+
+ [http.middlewares.m-strip-perfix.stripPrefixRegex]
+ regex = ["/[^/]+"]
+
+
+# 压缩响应体
+[http.middlewares.m-compress.compress]
+# 启用哪些压缩算法
+# 默认压缩算法
+# gzip: 最通用，所有浏览器都支持
+# brotli: 比 gzip 更好，现代浏览器
+# zstd（高性能压缩）
+encodings = ["gzip", "brotli"]
+
+# 浏览器没指定压缩格式时，用哪个默认
+defaultEncoding = "gzip"
+
+# 响应体至少多大才开始压缩 （字节）
+# 太小的文件压缩没意义，还浪费 CPU
+# 默认：1024 字节（1KB）
+minResponseBodyBytes = 1024
+ 
+
+# 失败自动重试
+[http.middlewares.m-retry-3x.retry]
+attempts = 3
+
+
+# 专门用于「大文件上传」的中间件
+[http.middlewares.m-upload-100mb.buffering]
+# 100MB 上传限制
+maxRequestBodyBytes = 104857600
+# 10MB 内存缓冲，超过写磁盘
+memRequestBodyBytes  = 10485760
+# 响应也限制100MB
+maxResponseBodyBytes = 104857600
+
+ 
+
+
+# 重写路径  强制把请求路径「替换成」你指定的新路径
+# 用户访问 /aaa → 后端 /health
+# 用户访问 /api/user → 后端 /health
+# 用户访问 / → 后端 /health
+[http.middlewares.m-rewrite-path.replacePath]
+path = "/health"
+  
+
+# 统一控制「请求头 + 响应头 + CORS 跨域 + 全站安全头」的中间件
+[http.middlewares.secure-headers.headers]
+# CORS
+accessControlAllowCredentials = true
+accessControlAllowHeaders    = ["Content-Type", "Authorization"]
+accessControlAllowMethods    = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+accessControlAllowOriginList = ["https://app.example.com"]
+accessControlMaxAge          = 86400
+addVaryHeader                = true
+
+# 自定义添加请求头
+[http.middlewares.secure-headers.headers.customRequestHeaders]
+ X-Test = "yaobo" 
+
+# 自定义添加响应头
+[http.middlewares.secure-headers.headers.customResponseHeaders]
+X-Server = "Traefik"
+X-Powered-By = ""  # 空值 = 删除该头
+
+
+# 协议重定向
+# 强制把 http → https（或者 https → http）
+# 只改协议，不改域名、不改路径
+[http.middlewares.m-https-redirect.redirectScheme]
+scheme = "https"  # 重定向成 https
+permanent = true   # 301永久重定向（SEO友好）
+
+# 旧API跳新API
+[http.middlewares.api-v1-redirect.redirectRegex]
+regex = "^(.*)/api/(.*)"
+replacement = "$1/v1/api/$2"
+permanent = true
+
+
+# 鉴权中间件
+[http.middlewares.m-basic-auth.basicAuth]
+users = ["user:password"]

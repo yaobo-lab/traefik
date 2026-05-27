@@ -1,0 +1,174 @@
+
+# loadBalancer 和 weighted，只能选一个
+
+# loadBalancer: 把请求均匀转发到多个后端服务器
+# 支持：轮询、最少连接、健康检查、超时、粘性会话
+# 场景：Web 服务、API 服务、常规微服务
+[http.services.api-backend.loadBalancer]
+
+
+# 转发策略：
+
+# wrr 轮询 顺序规则
+# 按顺序轮流转发请求给后端
+# 它记住上一次发给了谁，下一次直接取下一个
+# 完全轮流，均匀分发
+# 支持权重（默认所有节点权重相同）, 给后端设置权重，让性能好的机器多扛流量 权重越高，被选中次数越多！
+
+
+# p2c 次随机选择
+# 随机选 2 个后端 
+# 选择其中 连接数更少 的一个
+# 比轮询更均衡，比最少连接更快
+
+# 优点
+# 非常均衡
+# 性能极高
+# 抗雪崩、抗热点
+# 适合高并发、长连接场景
+
+# 高并发 API & gRPC & 长连接 &大规模微服务
+
+
+# hrw 一致性哈希
+# 根据 客户端 IP / 源地址 / 域名 / 请求参数 做哈希
+# 同一个客户端 永远命中同一个后端 
+# 节点上下线 只影响少量用户（一致性哈希）
+
+# 优点
+# 天然会话保持（不需要 Cookie）
+# 有状态服务必备
+# 节点扩缩容影响最小
+
+
+# leasttime 最小响应时间
+# 最少活跃连接
+# 最快平均响应时间
+
+# 优点：
+# 最智能
+# 自动避开慢节点
+# 自动降低延迟
+# 适合后端性能不一致的场景
+
+strategy = "wrr"
+
+# 是否转发原始 Host 头
+# 用户访问 Host: api.com
+# Traefik 转发给后端 Host: api.com
+passHostHeader = true
+
+# 使用对应的传输配置
+serversTransport = "upload-timeout-transport"
+
+# 会话粘性（会话保持）
+# 让同一个客户端的请求，始终落到同一台后端 （基于 Cookie 实现）
+[http.services.api-backend.loadBalancer.sticky.cookie]
+# 自定义Cookie名
+name = "my_sticky_cookie"
+# HTTPS Only
+secure = true              
+httpOnly = true
+
+
+# 健康检查（可选）
+# Traefik 定期向后端发送请求，自动剔除不健康节点
+[http.services.api-backend.loadBalancer.healthCheck]
+mode="http"
+path = "/api/health"     # 检查路径
+interval = "10s"         # 检查间隔
+timeout = "5s"           # 超时时间
+status = "200"           # 健康状态码
+
+
+# 后端服务器列表
+[[http.services.api-backend.loadBalancer.servers]]
+
+# 必须写：协议 + IP/域名 + 端口
+url = "http://127.0.0.1:8080"
+
+# WRR 加权轮询的权重 不写 =权重 1
+# 数字越大，这台服务器分到的请求越多
+weight=3
+
+# 转发时是否保留原始请求路径
+# https://info-gw.singworld.cn/aamiot-v5/api/ProductBasic/InfoTypePage?isAll=true
+# false 例子
+# backend  url = "http://127.0.0.1:8080/api"
+# 客户端访问 http://traefik/user/profile
+# Traefik 转发的最终地址：http://127.0.0.1:8080/api/user/profile
+# 后端 URL 里的 /api + 客户端路径 /user/profile 拼接了
+
+# true 例子
+# backend  url = "http://127.0.0.1:8080/api"
+# 客户端访问 http://traefik/user/profile
+# 实际转发：http://127.0.0.1:8080/user/profile
+preservePath = false
+
+
+
+[[http.services.api-backend.loadBalancer.servers]]
+url = "http://127.0.0.2:8080"
+weight=1
+preservePath = true
+
+
+# 金丝雀发布: 
+# 先给一小部分用户上新，观察没问题再全量发布
+# 只把新版本发布给少量机器 / 少量用户 监控错误率、延迟、异常
+# 没问题再逐步扩大到 10% → 50% → 100%
+
+
+# AB 测试（A/B Testing） 
+# 同一功能做两个版本，让用户随机分到 A 或 B，看哪个效果好
+# A：旧版 / 方案 1
+# B：新版 / 方案 2
+# 对比指标：点击率、转化率、停留时长、崩溃率等
+# 常用于产品功能、UI、策略、推荐算法验证
+
+# 多版本并行
+# 同一个服务同时跑多个版本，互不干扰
+# 比如：v1、v2、v3 同时在线 不同用户 / 不同流量规则路由到不同版本
+# 适用场景： 兼容老客户端（APP 不升级也能用） 灰度、AB 测试、大客户定制
+
+# 服务平滑升级
+# 不停机、用户无感知地把服务从旧版本换成新版本
+# 逐个实例更新：停一个旧的 → 启一个新的 → 替换
+# 始终保持服务可用
+
+
+
+
+# Weighted ： 权重负载均衡 → 按比例分配流量
+# 给不同后端设置权重，流量按权重比例分发
+# 场景：灰度发布、金丝雀发布、多版本服务
+[http.services.my-w-api-backend.weighted]
+# 服务A 占 70% 流量
+[[http.services.my-w-api-backend.weighted.services]]
+name = "my-app-v1"
+weight = 70
+
+# 服务B 占 30% 流量
+[[http.services.my-w-api-backend.weighted.services]]
+name = "my-app-v2"
+weight = 30
+
+
+# 基于 Cookie 实现 让同一个用户，永远落在同一个版本上
+[http.services.my-w-app.weighted.sticky.cookie]
+name = "version_sticky"
+secure = true
+
+
+# 子服务 v1 
+[http.services.my-w-app-v1.loadBalancer]
+[[http.services.my-w-app-v1.loadBalancer.servers]]
+url = "http://192.168.1.10:80"   
+
+[[http.services.my-w-app-v1.loadBalancer.servers]]
+url = "http://192.168.1.11:80"  
+
+# 子服务 v2 
+[http.services.my-w-app-v2.loadBalancer]
+[[http.services.my-w-app-v2.loadBalancer.servers]]
+url = "http://192.168.1.20:80"  

@@ -1,0 +1,11 @@
+[[tls.certificates]]
+certFile = "/path/to/fullchain.pem"  # 公钥证书
+keyFile  = "/path/to/privkey.pem"    # 私钥
+
+[[tls.certificates]]
+certFile = "/providers/certs/b.com.crt"
+keyFile  = "/providers/certs/b.com.key"
+
+[[tls.certificates]]
+certFile = "/providers/certs/api.c.com.crt"
+keyFile  = "/providers/certs/api.c.com.key"

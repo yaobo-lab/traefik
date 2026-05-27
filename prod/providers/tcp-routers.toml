@@ -1,0 +1,37 @@
+# TCP 是 4 层代理，转发「纯流量」
+# 可以代理：MySQL、Redis、SSH、Postgres、游戏、gRPC、小视频… 一切 TCP 流量
+
+
+# TCP 路由
+[tcp.routers.mysql-router]
+# 绑定入口点 
+entryPoints = ["mysql"]
+
+# 匹配规则
+# HostSNI(域名) 
+# rule = "HostSNI(`mysql.example.com`)"
+# 匹配所有 TLS 流量（最常用）  rule = "HostSNI(`*`)"  
+
+
+# IPMatch(IP段)
+# 匹配客户端来源 IP
+# rule = "IPMatch(`192.168.1.0/24`)"
+
+# ClientIP(IP段)
+# 匹配客户端 IP. IP 白名单
+# rule = "ClientIP(`10.0.0.0/8`)"
+
+rule = "HostSNI(`*`)"    
+
+# 转发到服务     
+service = "mysql-service"
+
+# 使用的中间件
+middlewares = ["m-mysql-ip-allow"]  
+
+# # tls
+# [tcp.routers.mysql-router.tls]
+# # 流量不解密，直接转发给后端  TLS 透传
+# # 自己带 TLS 的服务
+# # false Traefik 解密 TLS  把明文发给后端
+# passthrough = true
