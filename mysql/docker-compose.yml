@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql1:
     image: crpi-p35inr9lrgirg3t0.cn-hangzhou.personal.cr.aliyuncs.com/yaobo-box/mysql:8.0
