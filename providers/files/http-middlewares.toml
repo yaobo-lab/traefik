@@ -80,7 +80,7 @@ users = ["user:password"]
 [http.middlewares.oidc-auth.forwardAuth]
 
 # 认证服务的完整URL (如: https://auth-service.example.com/verify)
-address = "http://127.0.0.1:8080/auth"
+address = "http://127.0.0.1:5005/traefik/token/verify"
 
 # 是否信任并转发 `X-Forwarded-*` 系列头（如X-Forwarded-For, X-Forwarded-Proto）
 # 多级代理（如CDN → Traefik → Auth Service）时必须设为 true
