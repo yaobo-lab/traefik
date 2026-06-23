@@ -25,7 +25,7 @@ rule = "Host(`api.example.com`)&& Path(`/myapi`)"
 
  
 # 使用下面定义的中间件
-middlewares = ["m-ip-rate-limit","m-strip-pefix","m-ip-allow","m-forward-oidc-auth"]  
+middlewares = ["ip-rate-limit","strip-pefix","ip-allow","forward-oidc-auth"]  
 
 
 # 绑定的后端服务

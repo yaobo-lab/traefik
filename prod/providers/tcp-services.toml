@@ -2,7 +2,7 @@
 # 后端服务
 [tcp.services.mysql-service.loadBalancer]
 # 使用哪个 TCP 后端传输配置
-serversTransport = "m-mysql-tcp-timeout"
+serversTransport = "mysql-tcp-timeout"
 
 [tcp.services.my-service.loadBalancer.healthCheck]
 # 每5秒检查一次

@@ -3,26 +3,26 @@
 
 # 转发添加前缀 
 # 访问 /user → 转发给后端 /api/user
-[http.middlewares.m-add-pefix.addPrefix]
+[http.middlewares.add-pefix.addPrefix]
 prefix = "/api"
 
 # 转发删除前缀
 # 访问 /api/user → 转发给后端 /user
-[http.middlewares.m-strip-pefix.stripPrefix]
+[http.middlewares.strip-pefix.stripPrefix]
 prefixes = ["/api"]
 
 # 重写路径  强制把请求路径「替换成」你指定的新路径
 # 用户访问 /aaa → 后端 /health
 # 用户访问 /api/user → 后端 /health
 # 用户访问 / → 后端 /health
-[http.middlewares.m-rewrite-path.replacePath]
+[http.middlewares.rewrite-path.replacePath]
 path = "/health"
 
 
 # 只允许 只允许你指定的 IP / IP 段访问服务
 # 单个 IP：192.168.1.10
 # CIDR 段：192.168.1.0/24
-[http.middlewares.m-ip-allow.ipAllowList]
+[http.middlewares.ip-allow.ipAllowList]
 sourceRange = [
     "127.0.0.1",          # 本机
     "192.168.1.0/24",     # 内网
@@ -57,7 +57,7 @@ X-Powered-By = ""  # 空值 = 删除该头
 # 协议重定向
 # 强制把 http → https（或者 https → http）
 # 只改协议，不改域名、不改路径
-[http.middlewares.m-https-redirect.redirectScheme]
+[http.middlewares.https-redirect.redirectScheme]
 scheme = "https"  # 重定向成 https
 permanent = true   # 301永久重定向（SEO友好）
 
@@ -69,7 +69,7 @@ permanent = true
 
 
 # 鉴权中间件
-[http.middlewares.m-basic-auth.basicAuth]
+[http.middlewares.basic-auth.basicAuth]
 users = ["user:password"]
 
 
@@ -77,7 +77,7 @@ users = ["user:password"]
 # 2xx 响应：认证通过，Traefik 将原始请求转发给后端服务
 # 非 2xx 响应（如 401/403）：认证失败，Traefik 直接将认证服务的错误响应返回给客户端Traefik Labs
 # 可将认证服务返回的用户信息（如 X-User-ID）透传给后端服务
-[http.middlewares.m-oidc-auth.forwardAuth]
+[http.middlewares.oidc-auth.forwardAuth]
 
 # 认证服务的完整URL (如: https://auth-service.example.com/verify)
 address = "http://127.0.0.1:8080/auth"
@@ -121,7 +121,7 @@ headerField = "X-Forwarded-User"
 # 控制客户端每秒能发多少请求，防止被刷爆、CC 攻击、恶意调用
 #  average=10，period=1s  10 请求 / 秒
 #  average=10，period=60s  10 请求 / 分钟
-[http.middlewares.m-ip-rate-limit.rateLimit]
+[http.middlewares.ip-rate-limit.rateLimit]
 # 平均允许多少请求
 average = 100
 
@@ -161,7 +161,7 @@ ipv6Subnet = 64  # IPv6按/64子网聚合
 
 
 # 压缩响应体
-[http.middlewares.m-rep-compress.compress]
+[http.middlewares.rep-compress.compress]
 # 启用哪些压缩算法
 # 默认压缩算法
 # gzip: 最通用，所有浏览器都支持
@@ -202,7 +202,7 @@ attempts = 3
 
 
 # 专门用于「大文件上传」的中间件
-[http.middlewares.m-upload-100mb.buffering]
+[http.middlewares.upload-100mb.buffering]
 # 100MB 上传限制
 maxRequestBodyBytes = 104857600 
 # 10MB 内存缓冲，超过写磁盘

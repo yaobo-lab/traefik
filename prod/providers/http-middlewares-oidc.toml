@@ -2,7 +2,7 @@
 # 2xx 响应：认证通过，Traefik 将原始请求转发给后端服务
 # 非 2xx 响应（如 401/403）：认证失败，Traefik 直接将认证服务的错误响应返回给客户端Traefik Labs
 # 可将认证服务返回的用户信息（如 X-User-ID）透传给后端服务
-[http.middlewares.m-oidc-auth.forwardAuth]
+[http.middlewares.oidc-auth.forwardAuth]
 
 # 认证服务的完整URL (如: https://auth-service.example.com/verify)
 address = "http://127.0.0.1:8080/auth"

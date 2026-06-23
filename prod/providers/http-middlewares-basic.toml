@@ -3,21 +3,21 @@
 
 # 转发添加前缀 
 # 访问 /user → 转发给后端 /api/user
-[http.middlewares.m-add-api-pefix.addPrefix]
+[http.middlewares.add-api-pefix.addPrefix]
 prefix = "/api"
 
 # 转发删除前缀
 # 访问 /api/user → 转发给后端 /user
-[http.middlewares.m-strip-api-pefix.stripPrefix]
+[http.middlewares.strip-api-pefix.stripPrefix]
 prefixes = ["/api"]
 
 
- [http.middlewares.m-strip-perfix.stripPrefixRegex]
+ [http.middlewares.strip-perfix.stripPrefixRegex]
  regex = ["/[^/]+"]
 
 
 # 压缩响应体
-[http.middlewares.m-compress.compress]
+[http.middlewares.compress.compress]
 # 启用哪些压缩算法
 # 默认压缩算法
 # gzip: 最通用，所有浏览器都支持
@@ -35,12 +35,12 @@ minResponseBodyBytes = 1024
  
 
 # 失败自动重试
-[http.middlewares.m-retry-3x.retry]
+[http.middlewares.retry-3x.retry]
 attempts = 3
 
 
 # 专门用于「大文件上传」的中间件
-[http.middlewares.m-upload-100mb.buffering]
+[http.middlewares.upload-100mb.buffering]
 # 100MB 上传限制
 maxRequestBodyBytes = 104857600
 # 10MB 内存缓冲，超过写磁盘
@@ -55,7 +55,7 @@ maxResponseBodyBytes = 104857600
 # 用户访问 /aaa → 后端 /health
 # 用户访问 /api/user → 后端 /health
 # 用户访问 / → 后端 /health
-[http.middlewares.m-rewrite-path.replacePath]
+[http.middlewares.rewrite-path.replacePath]
 path = "/health"
   
 
@@ -82,7 +82,7 @@ X-Powered-By = ""  # 空值 = 删除该头
 # 协议重定向
 # 强制把 http → https（或者 https → http）
 # 只改协议，不改域名、不改路径
-[http.middlewares.m-https-redirect.redirectScheme]
+[http.middlewares.https-redirect.redirectScheme]
 scheme = "https"  # 重定向成 https
 permanent = true   # 301永久重定向（SEO友好）
 
@@ -94,5 +94,5 @@ permanent = true
 
 
 # 鉴权中间件
-[http.middlewares.m-basic-auth.basicAuth]
+[http.middlewares.basic-auth.basicAuth]
 users = ["user:password"]

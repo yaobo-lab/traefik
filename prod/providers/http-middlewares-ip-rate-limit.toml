@@ -1,5 +1,5 @@
  
-[http.middlewares.m-ip-rate-limit.rateLimit]
+[http.middlewares.ip-rate-limit.rateLimit]
 # 平均允许多少请求
 average = 100
 

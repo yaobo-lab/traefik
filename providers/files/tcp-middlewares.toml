@@ -1,6 +1,6 @@
  
 # IP白名单
-[tcp.middlewares.m-mysql-ip-allow.ipAllowList]
+[tcp.middlewares.mysql-ip-allow.ipAllowList]
 sourceRange = ["10.0.0.0/8", "192.168.1.0/24"]
 
 # 单个IP最多同时 5 个连接

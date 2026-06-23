@@ -5,7 +5,7 @@ entryPoints = ["web"]
 
 rule = "Host(`10.0.1.7`)&& PathPrefix(`/myapp`)"
 
-middlewares = ["m-internal-ip-allow","m-ip-rate-limit","m-strip-perfix"]  
+middlewares = ["internal-ip-allow","ip-rate-limit","strip-perfix"]  
 
 service = "myapp-api"
  

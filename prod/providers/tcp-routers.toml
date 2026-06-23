@@ -27,7 +27,7 @@ rule = "HostSNI(`*`)"
 service = "mysql-service"
 
 # 使用的中间件
-middlewares = ["m-mysql-ip-allow"]  
+middlewares = ["mysql-ip-allow"]  
 
 # # tls
 # [tcp.routers.mysql-router.tls]

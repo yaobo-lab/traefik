@@ -4,9 +4,9 @@ entryPoints = ["web"]
 
 rule = "Host(`10.0.1.7`)&& PathPrefix(`/whoami`)"
 
-# middlewares = ["m-strip-perfix"]  
-# middlewares = ["m-compress","m-ip-rate-limit","m-strip-perfix","m-ip-allow"]  
-middlewares = ["m-internal-ip-allow","m-ip-rate-limit","m-strip-perfix"]  
+# middlewares = ["strip-perfix"]  
+# middlewares = ["compress","ip-rate-limit","strip-perfix","ip-allow"]  
+middlewares = ["internal-ip-allow","ip-rate-limit","strip-perfix"]  
 
 service = "whoami-api"
  

@@ -1,11 +1,11 @@
  
 # IP白名单
-[tcp.middlewares.m-mysql-ip-allow.ipAllowList]
+[tcp.middlewares.mysql-ip-allow.ipAllowList]
 sourceRange = ["10.0.0.0/8", "192.168.1.0/24"]
 
 # 单个IP最多同时 5 个连接
 # 同一个 IP，同时跟 Traefik 保持着多少条 连接
-[tcp.middlewares.m-mysql-limit-ip-5.inFlightConn]
+[tcp.middlewares.mysql-limit-ip-5.inFlightConn]
 amount = 5 
 
 
