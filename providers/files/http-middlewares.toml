@@ -43,15 +43,6 @@ accessControlAllowOriginList = ["https://app.example.com"]
 accessControlMaxAge          = 86400
 addVaryHeader                = true
 
-# 自定义添加请求头
-[http.middlewares.secure-headers.headers.customRequestHeaders]
- X-Test = "yaobo" 
-
-# 自定义添加响应头
-[http.middlewares.secure-headers.headers.customResponseHeaders]
-X-Server = "Traefik"
-X-Powered-By = ""  # 空值 = 删除该头
-
 
 
 # 协议重定向

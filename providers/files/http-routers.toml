@@ -9,7 +9,6 @@ entryPoints = ["websecure"]
 # HTTP 路由器（规则匹配） 
 # 请求进来 → 代入 Rule → 结果为 true → 匹配成功 → 交给这个路由处理
 
-
 # Host(demo.com) 匹配请求的域名
 # Path(/api/user) 精确匹配路径,要一比一的相同
 # PathPrefix(/api) 前缀匹配路径
@@ -18,14 +17,14 @@ entryPoints = ["websecure"]
 # ClientIP(192.168.1.0/24) 匹配客户端 IP. IP 白名单
 # Query(id, 123) 匹配 URL 参数
 
- 
+
 # && （且 → 必须同时满足）
 # 必须域名 + 路径同时匹配才生效
 rule = "Host(`api.example.com`)&& Path(`/myapi`)"
 
  
 # 使用下面定义的中间件
-middlewares = ["ip-rate-limit","strip-pefix","ip-allow","forward-oidc-auth"]  
+middlewares = ["ip-rate-limit","strip-pefix","ip-allow","iot-basic-auth","forward-oidc-auth"]  
 
 
 # 绑定的后端服务
