@@ -2,7 +2,7 @@
 
 entryPoints = ["web"]
 
-rule = "Host(`10.0.1.7`)&& PathPrefix(`/whoami`)"
+rule = "Host(`10.0.1.7`)&&PathPrefix(`/whoami`)"
 
 # middlewares = ["strip-perfix"]  
 # middlewares = ["compress","ip-rate-limit","strip-perfix","ip-allow"]  
