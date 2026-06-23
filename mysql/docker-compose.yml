@@ -11,7 +11,7 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - $PWD/data1:/var/lib/mysql         
-      - $PWD/conf1:/etc/mysql/conf.d     
+      - $PWD/conf1:/etc/mysql/conf.d
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci

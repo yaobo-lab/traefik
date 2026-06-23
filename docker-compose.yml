@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: crpi-p35inr9lrgirg3t0.cn-hangzhou.personal.cr.aliyuncs.com/yaobo-box/traefik:v3.6.14
+    image: crpi-p35inr9lrgirg3t0.cn-hangzhou.personal.cr.aliyuncs.com/yaobo-box/traefik:v3.6.21
     privileged: true
     network_mode: "host"
     restart: unless-stopped
