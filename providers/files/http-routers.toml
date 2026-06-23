@@ -22,7 +22,7 @@ entryPoints = ["websecure"]
 # 必须域名 + 路径同时匹配才生效
 rule = "Host(`api.example.com`)&& Path(`/myapi`)"
 
- 
+
 # 使用下面定义的中间件
 middlewares = ["ip-rate-limit","strip-pefix","ip-allow","iot-basic-auth","forward-oidc-auth"]  
 
