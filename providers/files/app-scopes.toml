@@ -1,6 +1,6 @@
 
 
 # iotBasicAuth client key
-[http.middlewares.iot-basic-auth.headers.customRequestHeaders]
+[http.middlewares.scope-iot-basic-auth.headers.customRequestHeaders]
 APP-Scope-Name = "iot-basic-auth" 
  
