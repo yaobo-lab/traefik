@@ -169,6 +169,8 @@ url = "http://192.168.1.10:80"
 url = "http://192.168.1.11:80"  
 
 # 子服务 v2 
+
 [http.services.my-w-app-v2.loadBalancer]
+
 [[http.services.my-w-app-v2.loadBalancer.servers]]
 url = "http://192.168.1.20:80"  

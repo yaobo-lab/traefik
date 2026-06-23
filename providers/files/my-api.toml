@@ -17,7 +17,6 @@ entryPoints = ["websecure"]
 # ClientIP(192.168.1.0/24) 匹配客户端 IP. IP 白名单
 # Query(id, 123) 匹配 URL 参数
 
-
 # && （且 → 必须同时满足）
 # 必须域名 + 路径同时匹配才生效
 rule = "Host(`api.example.com`)&& Path(`/myapi`)"

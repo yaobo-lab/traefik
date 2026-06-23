@@ -44,7 +44,6 @@ accessControlMaxAge          = 86400
 addVaryHeader                = true
 
 
-
 # 协议重定向
 # 强制把 http → https（或者 https → http）
 # 只改协议，不改域名、不改路径
@@ -62,7 +61,6 @@ permanent = true
 # 鉴权中间件
 [http.middlewares.basic-auth.basicAuth]
 users = ["user:password"]
-
 
 # 转发认证-它将请求的认证 / 授权逻辑完全委托给外部服务，实现网关层统一认证
 # 2xx 响应：认证通过，Traefik 将原始请求转发给后端服务
@@ -106,7 +104,6 @@ addAuthCookiesToResponse = ["session_id"]
 
 # 指定一个头名，用于存储认证用户信息（通常配合Auth服务使用）
 headerField = "X-Forwarded-User"
-
 
 # 限流（每秒请求数）
 # 控制客户端每秒能发多少请求，防止被刷爆、CC 攻击、恶意调用
