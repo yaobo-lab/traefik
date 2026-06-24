@@ -1,5 +1,5 @@
 
-# 基础中间件
+#[中间件] 请求到达 Service 前 执行逻辑 
 
 # 转发添加前缀 
 # 访问 /user → 转发给后端 /api/user
@@ -91,6 +91,6 @@ replacement = "$1/v1/api/$2"
 permanent = true
 
 
-# basic 鉴权中间件
+# 鉴权中间件
 [http.middlewares.basic-auth.basicAuth]
 users = ["user:password"]

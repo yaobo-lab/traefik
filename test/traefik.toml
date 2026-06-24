@@ -8,6 +8,9 @@ address = ":80"
 [entryPoints.websecure]
 address = ":443"
 
+[entryPoints.mysql]
+address = ":3366"
+
 
 [log]
 level = "DEBUG" 
@@ -16,7 +19,7 @@ maxAge=15
 maxSize=300 
 noColor=true
 format = "common"
-maxBackups = 5 
+maxBackups = 10 
 compress   = true 
 
 
@@ -65,10 +68,7 @@ defaultMode = "drop"
 "Authorization" = "keep"    # 授权信息
 "Cookie"        = "keep"   # Cookie
 
-
-################################################################
-# 配置 Traefik 的 API 接口与 Web 控制面板
-################################################################
+ 
 [api]
 insecure = true
 debug=false
@@ -76,7 +76,6 @@ dashboard = true
 disableDashboardAd=true
 
 
-# 用来让外部 监控工具检测：Traefik 是否还活着、是否正常运行
 [ping]
 entryPoint = "web"
 
