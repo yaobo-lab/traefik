@@ -8,6 +8,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime
       - /var/run/docker.sock:/var/run/docker.sock
-      - $PWD/etc/traefik.toml:/etc/traefik/traefik.toml
+      - $PWD/traefik.toml:/etc/traefik/traefik.toml
       - $PWD/providers:/providers
       - $PWD/log:/var/log

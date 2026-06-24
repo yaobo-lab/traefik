@@ -2,7 +2,7 @@
 # 2xx 响应：认证通过，Traefik 将原始请求转发给后端服务
 # 非 2xx 响应（如 401/403）：认证失败，Traefik 直接将认证服务的错误响应返回给客户端Traefik Labs
 # 可将认证服务返回的用户信息（如 X-User-ID）透传给后端服务
-[http.middlewares.oidc-auth.forwardAuth]
+[http.middlewares.forward-oidc-auth.forwardAuth]
 
 # 认证服务的完整URL (如: https://auth-service.example.com/verify)
 address = "http://127.0.0.1:5005/traefik/token/verify"
@@ -29,7 +29,7 @@ preserveLocationHeader = true
 preserveRequestMethod = false
 
 # 指定哪些客户端请求头要发给认证服务。默认：发送所有头
-authRequestHeaders = ["Authorization", "Cookie", "X-Real-IP"]
+authRequestHeaders = ["Authorization", "Cookie", "X-Real-IP","APP-Scope-Name"]
 
 # 把授权服务返回的指定响应头，复制并覆盖, 发给后端的请求头里 
 # 作用：后端服务可直接读取用户信息（如用户ID、角色）

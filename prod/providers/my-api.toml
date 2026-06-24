@@ -29,7 +29,7 @@ entryPoints = ["web"]
 
 # && （且 → 必须同时满足）
 # 必须域名 + 路径同时匹配才生效
-rule = "Host(`172.24.171.242`)&&Path(`/whoami`)"
+rule = "Host(`172.24.171.242`)&&PathPrefix(`/whoami`)"
 
 
 # 使用中间件
@@ -38,17 +38,17 @@ rule = "Host(`172.24.171.242`)&&Path(`/whoami`)"
 # ip-allow IP   白名单
 # scope-iot-basic-auth 加 headers
 # forward-oidc-auth 转发 oidc 认证
-middlewares = ["ip-rate-limit","strip-pefix","ip-allow","scope-iot-basic-auth","forward-oidc-auth"]  
+middlewares = ["ip-rate-limit","whoami-strip-prefix","scope-iot-basic-auth","forward-oidc-auth"]  
 
 
 # 绑定的后端服务
-service = "api-backend"
+service = "whoami-backend"
 
 
 # 扫描全局所有 [[tls.certificates]]
 # 找到包含 api.example.com 域名的证书
 # 自动使用它
-[http.routers.my-api.tls] 
+# [http.routers.my-api.tls] 
 
 # 可观测性-开启访问日志
 [http.routers.my-api.observability]
@@ -60,7 +60,7 @@ accessLogs = true
 # loadBalancer: 把请求均匀转发到多个后端服务器
 # 支持：轮询、最少连接、健康检查、超时、粘性会话
 # 场景：Web 服务、API 服务、常规微服务
-[http.services.api-backend.loadBalancer]
+[http.services.whoami-backend.loadBalancer]
 
 
 # 转发策略：
@@ -118,7 +118,7 @@ passHostHeader = true
 
 # 会话粘性（会话保持）
 # 让同一个客户端的请求，始终落到同一台后端 （基于 Cookie 实现）
-[http.services.api-backend.loadBalancer.sticky.cookie]
+[http.services.whoami-backend.loadBalancer.sticky.cookie]
 # 自定义Cookie名
 name = "my_sticky_cookie"
 # HTTPS Only
@@ -128,16 +128,16 @@ httpOnly = true
 
 # 健康检查（可选）
 # Traefik 定期向后端发送请求，自动剔除不健康节点
-[http.services.api-backend.loadBalancer.healthCheck]
-mode="http"
-path = "/api/health"     # 检查路径
-interval = "10s"         # 检查间隔
-timeout = "5s"           # 超时时间
-status = "200"           # 健康状态码
+# [http.services.whoami-backend.loadBalancer.healthCheck]
+# mode="http"
+# path = "/api/health"     # 检查路径
+# interval = "50s"         # 检查间隔
+# timeout = "5s"           # 超时时间
+# status = "200"           # 健康状态码
 
 
 # 后端服务器列表
-[[http.services.api-backend.loadBalancer.servers]]
+[[http.services.whoami-backend.loadBalancer.servers]]
 # 必须写：协议 + IP/域名 + 端口
 url = "http://127.0.0.1:801"
 
@@ -160,7 +160,7 @@ weight=3
 preservePath = false
 
 
-[[http.services.api-backend.loadBalancer.servers]]
+[[http.services.whoami-backend.loadBalancer.servers]]
 url = "http://127.0.0.2:802"
 weight=1
 preservePath = true

@@ -1,3 +1,4 @@
+# docker-compose -f ./docker-compose-1.yml up -d
 services:
   whoami1:
     container_name: whoami1

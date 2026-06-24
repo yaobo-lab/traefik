@@ -1,0 +1,4 @@
+# 转发删除前缀
+# 访问 /api/user → 转发给后端 /user
+[http.middlewares.whoami-strip-prefix.stripPrefix]
+prefixes = ["/whoami"]
