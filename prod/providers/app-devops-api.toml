@@ -1,0 +1,55 @@
+# header 自定义
+[http.middlewares.scope-devops-api.headers.customRequestHeaders]
+APP-Scope-Name = "app-devops-api" 
+
+
+# 转发删除前缀 
+[http.middlewares.strip-prefix-devops-api.stripPrefix]
+prefixes = ["/devops"]
+
+
+[http.routers.app-devops-api]
+
+# 绑定入口点 多个入口点用数组
+entryPoints = ["web"]
+
+# HTTP 路由器（规则匹配） 
+rule = "Host(`172.24.171.242`)&&PathPrefix(`/devops`)"
+
+
+# 使用中间件 
+middlewares = ["ip-rate-limit","strip-prefix-devops-api","scope-devops-api","forward-oidc-auth"]  
+
+
+# 绑定的后端服务
+service = "app-devops-api"
+
+ 
+# 可观测性-开启访问日志
+[http.routers.app-devops-api.observability]
+accessLogs = false
+
+
+ 
+[http.services.app-devops-api.loadBalancer]
+strategy = "wrr"
+passHostHeader = true
+
+# 使用对应的传输配置
+# serversTransport = "upload-timeout-transport"
+
+# 会话粘性（会话保持）
+# 让同一个客户端的请求，始终落到同一台后端 （基于 Cookie 实现）
+[http.services.app-devops-api.loadBalancer.sticky.cookie]
+# 自定义Cookie名
+name = "devops_api_sticky_cookie"
+# HTTPS Only
+secure = true              
+httpOnly = true
+
+
+# 后端服务 
+[[http.services.app-devops-api.loadBalancer.servers]]
+url = "http://127.0.0.2:10088"
+weight=100
+preservePath = true
