@@ -34,7 +34,7 @@ passHostHeader = true
 # 自定义Cookie名
 name = "oidc_sticky_cookie"
 # HTTPS Only
-secure = true
+secure = false
 httpOnly = true
 
 
