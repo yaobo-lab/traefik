@@ -16,19 +16,16 @@ entryPoints = ["web"]
 # HTTP 路由器（规则匹配） 
 rule = "Host(`172.24.171.242`)&&PathPrefix(`/devops`)"
 
-
-# 使用中间件 
+# 使用中间件
 middlewares = ["ip-rate-limit","strip-prefix-devops-api","scope-devops-api","forward-oidc-auth"]  
 
 
 # 绑定的后端服务
 service = "app-devops-api"
 
- 
 # 可观测性-开启访问日志
 [http.routers.app-devops-api.observability]
 accessLogs = false
-
 
  
 [http.services.app-devops-api.loadBalancer]
