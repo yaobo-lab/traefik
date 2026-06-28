@@ -1,0 +1,45 @@
+
+# http://172.24.171.242
+ 
+[http.routers.app-oidc]
+
+# 绑定入口点 多个入口点用数组
+entryPoints = ["web"]
+
+# HTTP 路由器（规则匹配） 
+rule = "Host(`172.24.171.242`)"
+
+# 使用中间件
+middlewares = ["ip-rate-limit"]  
+
+
+# 绑定的后端服务
+service = "app-oidc"
+
+# 可观测性-开启访问日志
+[http.routers.app-oidc.observability]
+accessLogs = false
+
+ 
+[http.services.app-oidc.loadBalancer]
+strategy = "wrr"
+passHostHeader = true
+
+# 使用对应的传输配置
+# serversTransport = "upload-timeout-transport"
+
+# 会话粘性（会话保持）
+# 让同一个客户端的请求，始终落到同一台后端 （基于 Cookie 实现）
+[http.services.app-oidc.loadBalancer.sticky.cookie]
+# 自定义Cookie名
+name = "oidc_sticky_cookie"
+# HTTPS Only
+secure = true
+httpOnly = true
+
+
+# 后端服务 
+[[http.services.app-oidc.loadBalancer.servers]]
+url = "http://127.0.0.1:5005"
+weight=100
+preservePath = true

@@ -1,0 +1,19 @@
+
+[http.routers.client-devops-web]
+
+# 绑定入口点 多个入口点用数组
+entryPoints = ["web"]
+
+# HTTP 路由器（规则匹配） 
+rule = "Host(`172.24.171.242`)&&PathPrefix(`/devopsweb`)"
+ 
+service = "client-devops-web"
+
+ 
+[http.services.client-devops-web.loadBalancer]
+strategy = "wrr"
+passHostHeader = true
+ 
+[[http.services.client-devops-web.loadBalancer.servers]]
+url = "http://127.0.0.1:8090"
+weight=100
