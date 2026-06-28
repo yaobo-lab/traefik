@@ -1,4 +1,3 @@
-
 # http://172.24.171.242/devops/health
 
 # header 自定义
@@ -34,19 +33,6 @@ accessLogs = false
 [http.services.app-devops-api.loadBalancer]
 strategy = "wrr"
 passHostHeader = true
-
-# 使用对应的传输配置
-# serversTransport = "upload-timeout-transport"
-
-# 会话粘性（会话保持）
-# 让同一个客户端的请求，始终落到同一台后端 （基于 Cookie 实现）
-[http.services.app-devops-api.loadBalancer.sticky.cookie]
-# 自定义Cookie名
-name = "devops_api_sticky_cookie"
-# HTTPS Only
-secure = false              
-httpOnly = true
-
 
 # 后端服务 
 [[http.services.app-devops-api.loadBalancer.servers]]
